@@ -23,17 +23,20 @@ Install Django Haystack ES::
 
 Add ``haystack_es.ElasticsearchSearchEngine`` to your ``HAYSTACK_CONNECTIONS`` engine in ``settings.py``
 
+Example
+
 .. code-block:: python
 
     HAYSTACK_CONNECTIONS = {
         'default': {
-            'ENGINE': 'haystack_es.Elasticsearch5SearchEngine',
-            'URL': 'http://127.0.0.1:9200/',
-            'INDEX_NAME': 'my_index_name',
+            'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+            # ...
         }
     }
 
-Define your indexes using ``haystack_es.indexes`` instead of ``haystack.indexes``
+Define your indexes using ``haystack_es.indexes`` instead of ``haystack.indexes``.
+
+Example
 
 .. code-block:: python
 
@@ -44,8 +47,22 @@ Define your indexes using ``haystack_es.indexes`` instead of ``haystack.indexes`
 
 
     class MyModelIndex(indexes.SearchIndex, indexes.Indexable):
-        foo = indexes.CharField(document=True, use_template=True)
+        text = indexes.CharField(document=True, use_template=True)
         # ...
+
+If you want to utilize additional SearchQuerySet methods use ``haystack_es.query.SearchQuerySet``
+instead of ``haystack.query.SearchQuerySet``.
+
+Example
+
+.. code-block:: python
+
+    from haystack_es.query import SearchQuerySet
+
+    sqs = SearchQuerySet().filter(content='some query')
+    sqs.boost_fields({'name': 2, 'some_field': 1.5, 'another_field': 1})
+    sqs.facet('some_field')
+    # ...
 
 Running Tests
 -------------

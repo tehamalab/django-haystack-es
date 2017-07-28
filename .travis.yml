@@ -3,22 +3,28 @@
 language: python
 
 python:
-  - "3.5"
+    - "3.5"
 
 env: 
-  - TOX_ENV=py35-django-18
-  - TOX_ENV=py34-django-18
-  - TOX_ENV=py33-django-18
-  - TOX_ENV=py27-django-18
-  - TOX_ENV=py35-django-19
-  - TOX_ENV=py34-django-19
-  - TOX_ENV=py27-django-19
-  - TOX_ENV=py35-django-110
-  - TOX_ENV=py34-django-110
-  - TOX_ENV=py27-django-110
+    - TOX_ENV=py35-django-18
+    - TOX_ENV=py34-django-18
+    - TOX_ENV=py27-django-18
+    - TOX_ENV=py35-django-19
+    - TOX_ENV=py34-django-19
+    - TOX_ENV=py27-django-19
+    - TOX_ENV=py35-django-110
+    - TOX_ENV=py34-django-110
+    - TOX_ENV=py27-django-110
+    - TOX_ENV=py35-django-111
+    - TOX_ENV=py34-django-111
+    - TOX_ENV=py27-django-111
+    - TOX_ENV=py35-django-master
 
 matrix:
-  fast_finish: true
+    fast_finish: true
+
+    allow_failures:
+        - env: TOX_ENV=py35-django-master
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements_test.txt
@@ -27,4 +33,4 @@ install: pip install -r requirements_test.txt
 script: tox -e $TOX_ENV
 
 after_success:
-  - codecov -e TOX_ENV
+    - codecov -e TOX_ENV

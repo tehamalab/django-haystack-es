@@ -11,12 +11,9 @@ Django Haystack ES
 .. image:: https://codecov.io/gh/tehamalab/django-haystack-es/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/tehamalab/django-haystack-es
 
-Extended haystack backend for Elasticsearch
+Extended haystack backend for Elasticsearch.
+Currently tested with Elasticsearch 5.X only.
 
-Documentation
--------------
-
-The full documentation is at https://django-haystack-es.readthedocs.io.
 
 Quickstart
 ----------
@@ -25,33 +22,31 @@ Install Django Haystack ES::
 
     pip install django-haystack-es
 
-Add it to your `INSTALLED_APPS`:
+Add ``haystack_es.ElasticsearchSearchEngine`` to your ``HAYSTACK_CONNECTIONS`` engine in ``settings.py``
 
 .. code-block:: python
 
-    INSTALLED_APPS = (
-        ...
-        'haystack_es.apps.HaystackEsConfig',
-        ...
-    )
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack_es.Elasticsearch5SearchEngine',
+            'URL': 'http://127.0.0.1:9200/',
+            'INDEX_NAME': 'my_index_name',
+        }
+    }
 
-Add Django Haystack ES's URL patterns:
+Define your indexes using ``haystack_es.indexes`` instead of ``haystack.indexes``
 
 .. code-block:: python
 
-    from haystack_es import urls as haystack_es_urls
+    # myapp/search_indexes.py
+
+    from haystack_es import indexes
+    from myapp.models import MyModel
 
 
-    urlpatterns = [
-        ...
-        url(r'^', include(haystack_es_urls)),
-        ...
-    ]
-
-Features
---------
-
-* TODO
+    class MyModelIndex(indexes.SearchIndex, indexes.Indexable):
+        foo = indexes.CharField(document=True, use_template=True)
+        # ...
 
 Running Tests
 -------------
@@ -66,6 +61,10 @@ Does the code actually work?
 
 Credits
 -------
+
+Based on
+
+* `haystack-elasticsearch5`: https://github.com/Alkalit/haystack-elasticsearch5
 
 Tools used in rendering this package:
 

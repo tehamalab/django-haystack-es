@@ -11,8 +11,7 @@ Django Haystack ES
 .. image:: https://codecov.io/gh/tehamalab/django-haystack-es/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/tehamalab/django-haystack-es
 
-Extended haystack backend for Elasticsearch.
-Currently tested with Elasticsearch 5.X only.
+Extended Haystack backend for Elasticsearch 5.
 
 
 Quickstart

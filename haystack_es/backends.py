@@ -29,14 +29,14 @@ FIELD_MAPPINGS = {
     'ngram': {'type': 'text', 'analyzer': 'ngram_analyzer'},
     'date': {'type': 'date'},
     'datetime': {'type': 'date'},
-
-    'dict': {'type': 'object'},
-    'nested': {'type': 'nested'},
-    'location': {'type': 'geo_point'},
     'boolean': {'type': 'boolean'},
     'float': {'type': 'float'},
     'long': {'type': 'long'},
     'integer': {'type': 'long'},
+    'dict': {'type': 'object'},
+    'nested': {'type': 'nested'},
+    'location': {'type': 'geo_point'},
+    'geometry': {'type': 'geo_shape'},
 }
 
 
@@ -61,7 +61,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                     field_mapping['index'] = 'not_analyzed'
                     field_mapping['type'] = 'keyword'
 
-            if field_mapping['type'] not in ['object', 'nested', 'geo_point']:
+            if field_mapping['type'] not in ['object', 'nested', 'geo_point', 'geo_shape']:
                 # add raw field
                 if not field_mapping.get('fields'):
                     field_mapping['fields'] = {}

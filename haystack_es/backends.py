@@ -87,6 +87,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
         content_field = index.document_field
 
         filters = []
+        filters_with_score = []
         filter_query_strings = {
             'content': u'%s',
             'contains': u'*%s*',
@@ -117,7 +118,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                     if _lookup == 'exact':
                         filters.append({'term': {_field + '.raw': _value}})
                     elif _lookup == 'content':
-                        filters.append({'match': {_field: _value}})
+                        filters_with_score.append({'match': {_field: _value}})
                     elif _lookup == 'in':
                         if not isinstance(_value, list):
                             _value = ast.literal_eval(str(_value))
@@ -170,6 +171,10 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                 kwargs['query']['query_string']['fields'] = []
                 for boost_field, boost_value in boost_fields.items():
                     kwargs['query']['query_string']['fields'].append('%s^%s' % (boost_field, boost_value))
+
+        if filters_with_score:
+            kwargs['query'] = {"bool": {"must": [kwargs.pop("query")]}}
+            kwargs['query']['bool']['must'] += filters_with_score
 
         if fields:
             if isinstance(fields, (list, set)):

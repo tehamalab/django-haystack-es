@@ -511,7 +511,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                 del(additional_fields[DJANGO_ID])
 
                 if 'highlight' in raw_result:
-                    additional_fields['highlighted'] = raw_result['highlight'].get(content_field, '')
+                    additional_fields['highlighted'] = raw_result['highlight']
 
                 if distance_point:
                     additional_fields['_point_of_origin'] = distance_point

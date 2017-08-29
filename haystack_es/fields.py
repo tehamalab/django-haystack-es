@@ -1,9 +1,7 @@
 # -*- coding: utf-8
 
 import json
-from django.contrib.gis.geos import GEOSGeometry
 from haystack.fields import SearchField, CharField
-from haystack.utils.geo import ensure_geometry
 
 
 class DictField(SearchField):
@@ -44,6 +42,8 @@ class GeometryField(SearchField):
     field_type = 'geometry'
 
     def prepare(self, obj):
+        from haystack.utils.geo import ensure_geometry
+
         value = super(GeometryField, self).prepare(obj)
         if not value:
             return value
@@ -53,6 +53,8 @@ class GeometryField(SearchField):
         return value
 
     def convert(self, value):
+        from django.contrib.gis.geos import GEOSGeometry
+
         if value is None:
             return None
         return GEOSGeometry(value)

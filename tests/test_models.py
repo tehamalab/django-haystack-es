@@ -10,8 +10,6 @@ Tests for `django-haystack-es` models module.
 
 from django.test import TestCase
 
-from haystack_es import models
-
 
 class TestHaystack_es(TestCase):
 

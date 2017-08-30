@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import haystack
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend, ElasticsearchSearchQuery
-from haystack.backends import BaseEngine, log_query
+from haystack.backends import SearchNode, BaseEngine, log_query
 from haystack.models import SearchResult
 from haystack.constants import (DEFAULT_OPERATOR, DJANGO_CT, DJANGO_ID, FUZZY_MAX_EXPANSIONS, DEFAULT_ALIAS,
                                 FILTER_SEPARATOR, VALID_FILTERS)
@@ -567,10 +567,18 @@ class Elasticsearch5SearchQuery(ElasticsearchSearchQuery):
 
             final_query = "%s %s" % (final_query, " ".join(boost_list))
 
-        for f in self.query_filter.children:
-            self.filter_context.append({f[0]: f[1]})
+        self.build_filter_context(self.query_filter)
 
         return final_query
+
+    def build_filter_context(self, query_filter):
+        for f in query_filter.children:
+            if isinstance(f, SearchNode):
+                self.build_filter_context(f)
+            else:
+                filter_query = {f[0]: f[1]}
+                if filter_query not in self.filter_context:
+                    self.filter_context.append({f[0]: f[1]})
 
     def build_params(self, spelling_query=None, **kwargs):
         search_kwargs = super(Elasticsearch5SearchQuery, self).build_params(spelling_query, **kwargs)

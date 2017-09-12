@@ -68,8 +68,8 @@ Example
     # ...
 
 
-Differences from the default django-haystack backend
------------------------------------------------------
+Differences compared to the default django-haystack Elasticsearch backend
+---------------------------------------------------------------------------
 
 * Intended for Elasticsearch >= 5
 * Allows query-time fields boosting.

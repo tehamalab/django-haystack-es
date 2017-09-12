@@ -76,7 +76,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
         return (content_field_name, mapping)
 
     def build_search_kwargs(self, query_string, sort_by=None, start_offset=0, end_offset=None,
-                            fields='', highlight=False, boost_fields=None,
+                            fields='', highlight=False, boost_fields=None, boost_negative=None,
                             filter_context=None, narrow_queries=None, spelling_query=None,
                             facets=None, date_facets=None, query_facets=None,
                             within=None, dwithin=None, distance_point=None,
@@ -171,6 +171,13 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                 kwargs['query']['query_string']['fields'] = []
                 for boost_field, boost_value in boost_fields.items():
                     kwargs['query']['query_string']['fields'].append('%s^%s' % (boost_field, boost_value))
+            if boost_negative:
+                boosting = {
+                    'positive': kwargs['query'],
+                    'negative': boost_negative[0],
+                    'negative_boost': boost_negative[1]
+                }
+                kwargs['query'] = {'boosting': boosting}
 
         if filters_with_score:
             kwargs['query'] = {"bool": {"must": [kwargs.pop("query")]}}
@@ -550,6 +557,7 @@ class Elasticsearch5SearchQuery(ElasticsearchSearchQuery):
 
     def __init__(self, using=DEFAULT_ALIAS):
         self.boost_fields = {}
+        self.boost_negative = []
         self.filter_context = []
         super(Elasticsearch5SearchQuery, self).__init__(using=using)
 
@@ -583,6 +591,8 @@ class Elasticsearch5SearchQuery(ElasticsearchSearchQuery):
         search_kwargs = super(Elasticsearch5SearchQuery, self).build_params(spelling_query, **kwargs)
         if self.boost_fields:
             search_kwargs['boost_fields'] = self.boost_fields
+        if self.boost_negative:
+            search_kwargs['boost_negative'] = self.boost_negative
         if self.filter_context:
             search_kwargs['filter_context'] = self.filter_context
         return search_kwargs
@@ -591,9 +601,14 @@ class Elasticsearch5SearchQuery(ElasticsearchSearchQuery):
         """Add boosted fields to the query."""
         self.boost_fields = fields
 
+    def add_boost_negative(self, query, negative_boost):
+        """Add negative boost to the query."""
+        self.boost_negative = [query, negative_boost]
+
     def _clone(self, klass=None, using=None):
         clone = super(Elasticsearch5SearchQuery, self)._clone(klass, using)
         clone.boost_fields = self.boost_fields.copy()
+        clone.boost_negative = self.boost_negative.copy()
         clone.filter_context = self.filter_context.copy()
         return clone
 

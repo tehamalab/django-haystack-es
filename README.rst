@@ -11,7 +11,7 @@ Django Haystack ES
 .. image:: https://codecov.io/gh/tehamalab/django-haystack-es/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/tehamalab/django-haystack-es
 
-Extended Haystack backend for Elasticsearch 5.
+Django Haystack backend for Elasticsearch 5.
 
 
 Quickstart
@@ -21,7 +21,7 @@ Install Django Haystack ES::
 
     pip install django-haystack-es
 
-Add ``haystack_es.ElasticsearchSearchEngine`` to your ``HAYSTACK_CONNECTIONS`` engine in ``settings.py``
+Add ``haystack_es.backends.ElasticsearchSearchEngine`` to your ``HAYSTACK_CONNECTIONS`` engine in ``settings.py``
 
 Example
 
@@ -50,6 +50,9 @@ Example
         text = indexes.CharField(document=True, use_template=True)
         # ...
 
+If you have `celery-haystack <http://celery-haystack.readthedocs.org/>`_ installed you can use
+``haystack_es.indexes.CelerySearchIndex`` for defining your SearchIndex utilizing celery-haystack
+
 If you want to utilize additional SearchQuerySet methods use ``haystack_es.query.SearchQuerySet``
 instead of ``haystack.query.SearchQuerySet``.
 
@@ -60,9 +63,50 @@ Example
     from haystack_es.query import SearchQuerySet
 
     sqs = SearchQuerySet().filter(content='some query')
-    sqs.boost_fields({'name': 2, 'some_field': 1.5, 'another_field': 1})
+    sqs.boost_fields({'field_name': 2, 'some_field': 1.5, 'another_field': 1})
     sqs.facet('some_field')
     # ...
+
+
+Differences from the default django-haystack backend
+-----------------------------------------------------
+
+* Intended for Elasticsearch >= 5
+* Allows query-time fields boosting.
+* Allows query-time
+  `negative boost <https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-boosting-query.html>`_ 
+* Provides additional SearchFields; ``DictField``, ``NestedField`` and ``GeometryField``
+* Tries to use Elasticsearch
+  `filter context <https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html>`_
+  instead of query string for filtering results.
+* Uses `multi-fields <https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html>`_
+  for creating shadow fields which are useful for performing operations like
+  faceting and exact matches which need non-analyzed values.
+
+Query-time fields boosting
+----------------------------
+
+::
+
+    from haystack_es.query import SearchQuerySet
+    SearchQuerySet().boost_fields(boost_fields)
+
+
+Example ``SearchQuerySet().boost_fields({'field_name': 2, 'another_field': 1})``
+
+
+Negative boosting
+------------------
+
+::
+
+    from haystack_es.query import SearchQuerySet
+    SearchQuerySet().boost_negative(query, negative_boost)
+
+
+example
+``SearchQuerySet().boost_negative({'match': {'category.raw': 'awful type'}}, negative_boost)``
+
 
 Running Tests
 -------------
@@ -78,7 +122,7 @@ Does the code actually work?
 Credits
 -------
 
-Based on
+Inspired by
 
 * `haystack-elasticsearch5`: https://github.com/Alkalit/haystack-elasticsearch5
 

@@ -110,26 +110,28 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                     else:
                         query_string = '%s %s' % (query_string, content)
                 for k, v in f.items():
+                    _filter = None
+                    _filters_with_score = None
                     try:
                         _value = v.prepare()
                     except AttributeError:
                         _value = str(v)
                     _field, _lookup = self.get_filter_lookup(k)
                     if _lookup == 'exact':
-                        filters.append({'term': {_field + '.raw': _value}})
+                        _filter = {'term': {_field + '.raw': _value}}
                     elif _lookup == 'content':
-                        filters_with_score.append({'match': {_field: _value}})
+                        _filter_with_score = {'match': {_field: _value}}
                     elif _lookup == 'in':
                         if not isinstance(_value, list):
                             _value = ast.literal_eval(str(_value))
-                        filters.append({
+                        _filter = {
                             'query_string': {
                                 'fields': [_field],
                                 'query': ' OR '.join(_value),
-                            }})
+                            }}
                     elif _lookup == 'range':
                         if isinstance(_value, dict):
-                            filters.append({'range': {_field: _value}})
+                            _filter = {'range': {_field: _value}}
                         elif _value:
                             if not isinstance(_value, list):
                                 _value = _value.split(',')
@@ -137,17 +139,40 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                                 _range = {}
                                 _range['gte'] = _value[0]
                                 _range['lte'] = _value[1]
-                                filters.append({'range': {_field: _range}})
+                                _filter = {'range': {_field: _range}}
                             else:
                                 raise ValueError(
                                     _('Range lookup requires minimum and maximum values,'
                                       'only one value was provided'))
                     else:
-                        filters.append({
+                        _filter = {
                             'query_string': {
                                 'fields': [_field],
                                 'query': filter_query_strings[_lookup] % _value,
-                            }})
+                            }}
+
+                    # nested filter
+                    if '.' in _field:
+                        if _filter:
+                            _filter = {
+                                'nested': {
+                                    'path': _field.split('.')[0],
+                                    'query': _filter
+                                }
+                            }
+                        if _filter_with_score:
+                            _filter_with_score = {
+                                'nested': {
+                                    'path': _field.split('.')[0],
+                                    'query': _filter_with_score
+                                }
+                            }
+
+                    if _filter:
+                        filters.append(_filter)
+                    if _filter_with_score:
+                        filters.append(_filter_with_score)
+
         if query_string == '*:*':
             kwargs = {
                 'query': {

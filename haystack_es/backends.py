@@ -117,6 +117,11 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                     except AttributeError:
                         _value = str(v)
                     _field, _lookup = self.get_filter_lookup(k)
+                    _is_nested = '>' in _field
+                    _nested_path = None
+                    if _is_nested:
+                        _nested_path = _field.split('>')[0]
+                        _field = ('.').join(_field.split('>'))
                     if _lookup == 'exact':
                         _filter = {'term': {_field + '.raw': _value}}
                     elif _lookup == 'content':
@@ -152,18 +157,18 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                             }}
 
                     # nested filter
-                    if '.' in _field:
+                    if _is_nested:
                         if _filter:
                             _filter = {
                                 'nested': {
-                                    'path': _field.split('.')[0],
+                                    'path': _nested_path,
                                     'query': _filter
                                 }
                             }
                         if _filter_with_score:
                             _filter_with_score = {
                                 'nested': {
-                                    'path': _field.split('.')[0],
+                                    'path': _nested_path,
                                     'query': _filter_with_score
                                 }
                             }

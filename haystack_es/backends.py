@@ -41,6 +41,7 @@ FIELD_MAPPINGS = {
 
 NESTED_FILTER_SEPARATOR = '>'
 
+
 class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
 
     def build_schema(self, fields):

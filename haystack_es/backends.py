@@ -111,7 +111,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                         query_string = '%s %s' % (query_string, content)
                 for k, v in f.items():
                     _filter = None
-                    _filters_with_score = None
+                    _filter_with_score = None
                     try:
                         _value = v.prepare()
                     except AttributeError:
@@ -123,7 +123,10 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                         _nested_path = _field.split('>')[0]
                         _field = ('.').join(_field.split('>'))
                     if _lookup == 'exact':
-                        _filter = {'term': {_field + '.raw': _value}}
+                        if _is_nested:
+                            _filter = {'term': {_field: _value}}
+                        else:
+                            _filter = {'term': {_field + '.raw': _value}}
                     elif _lookup == 'content':
                         _filter_with_score = {'match': {_field: _value}}
                     elif _lookup == 'in':

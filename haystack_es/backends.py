@@ -39,6 +39,7 @@ FIELD_MAPPINGS = {
     'geometry': {'type': 'geo_shape'},
 }
 
+NESTED_FILTER_SEPARATOR = '>'
 
 class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
 
@@ -117,11 +118,11 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                     except AttributeError:
                         _value = str(v)
                     _field, _lookup = self.get_filter_lookup(k)
-                    _is_nested = '>' in _field
+                    _is_nested = NESTED_FILTER_SEPARATOR in _field
                     _nested_path = None
                     if _is_nested:
-                        _nested_path = _field.split('>')[0]
-                        _field = ('.').join(_field.split('>'))
+                        _nested_path = _field.split(NESTED_FILTER_SEPARATOR)[0]
+                        _field = ('.').join(_field.split(NESTED_FILTER_SEPARATOR))
                     if _lookup == 'exact':
                         if _is_nested:
                             _filter = {'term': {_field: _value}}

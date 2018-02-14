@@ -137,7 +137,7 @@ class Elasticsearch5SearchBackend(ElasticsearchSearchBackend):
                         _filter = {
                             'query_string': {
                                 'fields': [_field],
-                                'query': ' OR '.join(_value),
+                                'query': ' OR '.join(['"%s"' % i for i in _value])
                             }}
                     elif _lookup == 'range':
                         if isinstance(_value, dict):
